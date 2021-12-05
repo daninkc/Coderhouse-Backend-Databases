@@ -74,3 +74,6 @@ typings/
 
 # FuseBox cache
 .fusebox/
+
+#Firebase service account data
+config/serviceAccountKey.json
