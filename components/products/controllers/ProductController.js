@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { config } = require("../../../config");
-console.log(config.type)
+console.log(`Database running in ${config.type}`)
 const ProductModel = require(`../../../models/${config.type}/products`);
 
 class ProductController {

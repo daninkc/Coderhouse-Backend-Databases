@@ -9,7 +9,6 @@ module.exports = function cart(app) {
   router.post("/", async (req, res, next) => {
     const newCart = {
       timestamp: Date.now(),
-      products: []
     }
     const createdCart = await CartHandler.create(newCart)
     if (createdCart) {
@@ -29,7 +28,7 @@ module.exports = function cart(app) {
   router.get("/:id", async (req, res, next) => {
     const { id } = req.params;
     const cart = await CartHandler.getById(id)
-    if (cart && cart.length > 0) {
+    if (cart) {
       res.json(cart);
     } else {
       res.send('Cart not found')
@@ -50,12 +49,14 @@ module.exports = function cart(app) {
     const { id } = req.params;
     const { productId } = req.body
     const product = await ProductHandler.getById(productId)
-    if (product) {
-    await CartHandler.addProducts(id, product.at(0));
-    res.send(`Added product ${productId} to cart ${id}`);
-  } else {
-    res.send('Product to add was not found.')
-  }
+    if (product && product.length > 0) {
+      const addedProducts = await CartHandler.addProducts(id, productId);
+      if (addedProducts) {
+        res.send(`Added product ${productId} to cart ${id}`);
+      }
+    } else {
+      res.send('Product to add was not found.')
+    }
   });
 
   router.delete("/:id/products/:prod_id", async (req, res, next) => {

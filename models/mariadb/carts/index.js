@@ -11,41 +11,66 @@ module.exports = {
         const newDb = await mariadbclient.schema.createTable("carts", (table) => {
             table.increments('id')
             table.timestamp('timestamp')
-            table.json('products')
         })
         return newDb
     },
     create: async (cartToCreate) => {
         cartToCreate.timestamp = moment(cartToCreate.timestamp).format('YYYY-MM-DD hh:mm:ss')
-        cartToCreate.products = JSON.stringify(cartToCreate.products)
         const newCart = await mariadbclient.from("carts").insert(cartToCreate);
         return newCart;
     },
-    getAll: async () => {
-        let carts = await mariadbclient.from("carts").select('id', 'timestamp', 'products');
-        return carts;  //TODO: turn products string into json
-    },
     getById: async (selectedId) => {
-        let cart = await mariadbclient("carts").where({ id: selectedId })
-        if (cart && cart.length > 0) {
-            let editedCart = [];
-            const cartForResponse = { ...cart.at(0) }
-            cartForResponse.products = JSON.parse(cartForResponse.products)
-            editedCart.push(cartForResponse)
-            return editedCart;
+        const db = await mariadbclient.schema.hasTable("products_in_cart")
+        if (!db) {
+            await mariadbclient.schema.createTable("products_in_cart", (table) => {
+                table.increments('id')
+                table.integer('product_id').unsigned().references('id').inTable('products').onDelete('CASCADE').onUpdate('CASCADE')
+                table.integer('cart_id').unsigned().references('id').inTable('carts').onDelete('CASCADE').onUpdate('CASCADE')
+            })
         }
-        return cart;
+        const cartInfo = await mariadbclient("products_in_cart")
+            .innerJoin('carts', 'products_in_cart.cart_id', 'carts.id')
+    
+        const filteredCartInfo = cartInfo.filter((item) => (item.cart_id == selectedId));
+        const productsInCart = filteredCartInfo.map((item) => {
+            return item.product_id
+        })
+    
+        const products = [];
+    
+        for (let i = 0; i < productsInCart.length; i++) {
+            const element = await mariadbclient("products").where('id', '=', productsInCart[i])
+            const { name, price, imageUrl, stock, code, description } = element.at(0)
+            const obj = {
+                id: productsInCart[i], name, price, imageUrl, stock, code, description
+            }
+            products.push(obj)
+        }
+        console.log(cartInfo)
+        if(cartInfo && cartInfo.length > 0) {
+            const { id, timestamp } = cartInfo.at(0)
+            const cart = {
+                id,
+                timestamp,
+                products
+            }
+            return cart;
+        }
     },
     addProducts: async (selectedId, newProduct) => {
-        let prods = await mariadbclient("carts").where({ id: selectedId }).select('products')
-        let { products } = prods.at(0)
-        products = JSON.parse(products)
-        if (newProduct) {
-            products.push(newProduct)
+        const db = await mariadbclient.schema.hasTable("products_in_cart")
+        if (db) {
+            const added = await mariadbclient('products_in_cart').insert({ cart_id: +selectedId, product_id: newProduct })
+            return added
+        } else {
+            await mariadbclient.schema.createTable("products_in_cart", (table) => {
+                table.increments('id')
+                table.integer('product_id').unsigned().references('id').inTable('products').onDelete('CASCADE').onUpdate('CASCADE')
+                table.integer('cart_id').unsigned().references('id').inTable('carts').onDelete('CASCADE').onUpdate('CASCADE')
+            })
+            const added = await mariadbclient('products_in_cart').insert({ cart_id: +selectedId, product_id: newProduct })
+            return added
         }
-        const addedProductsInCart = await mariadbclient("carts").where({ id: selectedId }).update({ products: JSON.stringify(products) })
-        return addedProductsInCart;
-
     },
     deleteProducts: async (selectedId, productId) => {
         const prods = await mariadbclient("carts").where({ id: selectedId }).select('products')

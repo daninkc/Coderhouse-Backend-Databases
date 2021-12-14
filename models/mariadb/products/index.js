@@ -15,7 +15,7 @@ module.exports = {
             table.integer('stock')
             table.string('code')
             table.string('description')
-          })
+         })
         return newDb
     },
     create: async (productToCreate) => {
