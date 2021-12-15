@@ -1,15 +1,14 @@
-const fs = require("fs");
-const path = require("path");
 const { config } = require("../../../config");
-console.log(`Database running in ${config.type}`)
 const ProductModel = require(`../../../models/${config.type}/products`);
+
+console.log(`Database running in ${config.type}`)
 
 class ProductController {
   //For sql-type tables, I need to check if the table exists and if not, create it
   //For mongo and firebase it auto generates on document creation
   async check() {
     if (config.type === 'mariadb' || config.type === 'sqlite3') {
-      const checkTable = await ProductModel.check(); //llega true o false
+      const checkTable = await ProductModel.check();
       if (checkTable === false) {
         await ProductModel.createTable()
       }
@@ -21,7 +20,7 @@ class ProductController {
       const newProduct = await ProductModel.create(obj)
       return newProduct;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async getById(selectedId) {
@@ -30,7 +29,7 @@ class ProductController {
       const product = await ProductModel.getById(selectedId)
       return product;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async getAll() {
@@ -39,7 +38,7 @@ class ProductController {
       const allProducts = await ProductModel.getAll()
       return allProducts;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async editById(idToEdit, newItem) {
@@ -48,7 +47,7 @@ class ProductController {
       const editedProduct = await ProductModel.editById(idToEdit, newItem)
       return editedProduct;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async deleteById(idToDelete) {
@@ -57,7 +56,7 @@ class ProductController {
       const deletedProduct = await ProductModel.deleteById(idToDelete)
       return deletedProduct;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async deleteAll() {
@@ -66,7 +65,7 @@ class ProductController {
       const deletionResult = await ProductModel.deleteAll()
       return deletionResult;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 }

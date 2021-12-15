@@ -10,4 +10,4 @@ const config = {
     type: process.env.DB_TYPE || 'mongo'
 }
 
-module.exports = {config}
+module.exports = { config }

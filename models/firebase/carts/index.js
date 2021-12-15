@@ -103,7 +103,7 @@ module.exports = {
                 refs = doc.id;
             });
             const deletedCart = await db.collection('carts').doc(refs).delete();
-            return deletedCart;            
+            return deletedCart;
         } catch (error) {
             console.log(error)
         }

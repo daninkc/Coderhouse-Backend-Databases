@@ -1,5 +1,3 @@
-const fs = require("fs");
-const path = require("path");
 const { config } = require("../../../config");
 const CartModel = require(`../../../models/${config.type}/carts`);
 
@@ -8,7 +6,7 @@ class Cart {
   //For mongo and firebase it auto generates on document creation
   async check() {
     if (config.type === 'mariadb' || config.type === 'sqlite3') {
-      const checkTable = await CartModel.check(); //llega true o false
+      const checkTable = await CartModel.check();
       if (checkTable === false) {
         await CartModel.createTable()
       }
@@ -20,7 +18,7 @@ class Cart {
       const createdCart = await CartModel.create(obj)
       return createdCart;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async getById(selectedId) {
@@ -29,7 +27,7 @@ class Cart {
       const cart = await CartModel.getById(selectedId)
       return cart;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async addProducts(cartId, product) {
@@ -38,7 +36,7 @@ class Cart {
       const addedProducts = CartModel.addProducts(cartId, product)
       return addedProducts;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async deleteProducts(cartId, productId) {
@@ -47,7 +45,7 @@ class Cart {
       const deletedProducts = CartModel.deleteProducts(cartId, productId)
       return deletedProducts;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async getAll() {
@@ -56,7 +54,7 @@ class Cart {
       const allCarts = CartModel.getAll()
       return allCarts;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async deleteById(idToDelete) {
@@ -65,7 +63,7 @@ class Cart {
       const deletedCart = CartModel.deleteById(idToDelete)
       return deletedCart;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
   async deleteAll() {
@@ -74,7 +72,7 @@ class Cart {
       const deletionResult = CartModel.deleteAll();
       return deletionResult;
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 }
